@@ -1,19 +1,25 @@
 <!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>C-Chat</title>
-<link rel="icon" href="logo.png">
-<link rel="manifest" href="manifest.json">
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>C-Chat</title><link rel="icon" href="logo.png"><link rel="manifest" href="manifest.json">
 <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
-<style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,Arial}
-body{background:#F5F3FF}
-.page{display:none}.page.active{display:flex;min-height:100vh}
-#login{background:linear-gradient(135deg,#7B61FF,#5A3EFF);justify-content:center;align-items:center;padding:20px;min-height:100vh}
-.card{background:#fff;padding:26px;border-radius:24px;width:100%;max-width:340px;text-align:center;box-shadow:0 12px 30px rgba(0,0,0,.25)}
-.logo{width:88px;height:88px;border-radius:20px;object-fit:cover;margin:0 auto 10px;display:block}
-#cam{width:90px;height:90px;border-radius:50%;background:#000;margin:12px auto;display:block;object-fit:cover}
-.btn{width:100%;padding:13px;border:none;border-radius:12px;background:#7B61FF;color:#fff;font-weight:700;margin-top:10px;font-size:15px}
-.phone{width:100%;max-width:400px;margin:0 auto;background:#fff;min-height:100vh;display:flex;
+<link rel="stylesheet" href="style.css"></head><body>
+<div id="login" class="page active"><div class="card"><img src="logo.png" class="logo">
+<h2 style="color:#7B61FF">C-Chat</h2><video id="cam" autoplay muted playsinline></video>
+<input id="nameIn" placeholder="Your Name"><button class="btn" onclick="login()">Continue</button></div></div>
+<div id="app" class="page"><div class="phone">
+<div class="top"><div style="display:flex;align-items:center;gap:8px"><img src="logo.png"><b id="hi">C-Chat</b></div><span onclick="localStorage.clear();location.reload()">Logout</span></div>
+<div class="idBox" id="myId">Generating...</div>
+<div id="tabChats" class="tabPage active"><div style="padding:10px;display:flex;gap:6px"><input id="friendId" placeholder="Paste ID"><button onclick="copyId()" class="smallBtn">Copy</button></div>
+<div style="padding:0 10px 10px;display:flex;gap:6px"><button onclick="connectFriend()" class="greenBtn">Connect</button></div><div id="contactsList"></div></div>
+<div id="tabDial" class="tabPage"><div style="padding:14px;text-align:center"><input id="dialInput" placeholder="Paste ID"></div>
+<div class="dialGrid"><button class="dialBtn" onclick="addDial('1')">1</button><button class="dialBtn" onclick="addDial('2')">2</button><button class="dialBtn" onclick="addDial('3')">3</button>
+<button class="dialBtn" onclick="addDial('4')">4</button><button class="dialBtn" onclick="addDial('5')">5</button><button class="dialBtn" onclick="addDial('6')">6</button>
+<button class="dialBtn" onclick="addDial('7')">7</button><button class="dialBtn" onclick="addDial('8')">8</button><button class="dialBtn" onclick="addDial('9')">9</button>
+<button class="dialBtn" onclick="addDial('*')">*</button><button class="dialBtn" onclick="addDial('0')">0</button><button class="dialBtn" onclick="addDial('#')">#</button></div>
+<button class="callBtn" onclick="callFromDial(true)">📹</button></div>
+<div id="tabHistory" class="tabPage"><h3 style="padding:14px">Call History</h3><div id="historyList"></div></div>
+<div id="tabVideo" class="tabPage" style="padding:16px;text-align:center"><img src="logo.png" style="width:80px;border-radius:16px;margin:20px auto;display:block"><p id="myId2" style="font-size:11px;color:#7B61FF;word-break:break-all"></p><button onclick="doCall(true)" class="btn">📹 Video Call</button></div>
+<div class="bottomNav"><div class="navItem active" onclick="showTab('Chats')"><b>💬</b><span>Chats</span></div><div class="navItem" onclick="showTab('Dial')"><b>🔢</b><span>Dial</span></div><div class="navItem" onclick="showTab('History')"><b>🕒</b><span>History</span></div><div class="navItem" onclick="showTab('Video')"><b>📹</b><span>Video</span></div></div>
+<div id="chatWin"><div style="background:#7B61FF;color:#fff;padding:12px;display:flex;gap:10px;align-items:center"><span onclick="closeChat()">←</span><img src="logo.png" style="width:32px;height:32px;border-radius:50%"><b id="chatName" style="flex:1">Friend</b><button onclick="doCall(true)" style="width:32px;height:32px;border-radius:50%;border:none">📹</button></div><div id="chatMsgs"></div><div style="display:flex;padding:10px;gap:6px;background:#fff"><input id="msgIn" placeholder="Type..."><button onclick="sendReal()" class="roundBtn">➤</button></div></div>
+<div id="videoOverlay"><video id="remoteV" autoplay playsinline></video><video id="localV" autoplay muted playsinline></video><div class="vControls"><button onclick="endCall()" style="width:50px;height:50px;border-radius:50%;border:none;background:#FF3B30;color:#fff">✕</button></div></div>
+</div></div><script src="app.js"></script></body></html>
