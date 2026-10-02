@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chaitra Phone</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#25D366">
+<script src="https://unpkg.com/peerjs@1.5.3/dist/peerjs.min.js"></script>
+<style>
+body{margin:0;font-family:Arial;background:#111;color:white;text-align:center}
+.header{background:#25D366;padding:15px;font-weight:bold;font-size:20px}
+.box{background:#222;margin:12px;padding:15px;border-radius:15px}
+input{width:90%;padding:12px;border-radius:10px;border:none;margin:8px;font-size:16px}
+button{padding:12px 18px;border:none;border-radius:10px;margin:5px;font-weight:bold;font-size:15px}
+.green{background:#25D366;color:white} .blue{background:#0084ff;color:white} .red{background:red;color:white}
+video{width:90%;max-width:300px;border-radius:15px;margin:8px;background:black;height:200px}
+#chatBox{height:150px;overflow-y:auto;background:black;padding:10px;border-radius:10px;text-align:left;margin-bottom:10px}
+.myid{font-size:13px;color:#25D366;font-weight:bold;word-break:break-all;background:black;padding:10px;border-radius:10px}
+</style>
+</head>
+<body>
+<div class="header">📞 CHAITRA PHONE - REAL CALLING</div>
+<div class="box">
+<div>YOUR ID - Share to friend:</div>
+<div id="myId" class="myid">Loading... Wait 5 sec</div>
+<button class="blue" onclick="copyId()">Copy ID</button>
+</div>
+<div class="box">
+<input id="peerId" placeholder="Paste Friend ID here">
+<br>
+<button class="green" onclick="startCall(false)">📞 Voice Call</button>
+<button class="blue" onclick="startCall(true)">📹 Video Call</button>
+<br><button class="red" onclick="endCall()">❌ End</button>
+</div>
+<div class="box">
+<video id="myVideo" autoplay muted playsinline></video>
+<video id="friendVideo" autoplay playsinline></video>
+</div>
+<div class="box">
+<div id="chatBox"></div>
+<input id="msgInput" placeholder="Type message...">
+<button class="green" onclick="sendMsg()">Send</button>
+</div>
+<script>
+let peer=new Peer();let conn,currentCall,localStream;
+let myIdEl=document.getElementById('myId');
+peer.on('open',id=>{myIdEl.innerText=id;});
+peer.on('connection',c=>{conn=c;setupChat();});
+peer.on('call',async call=>{
+if(!confirm("📞 Call Coming! Accept?"))return;
+let isVideo=call.metadata&&call.metadata.video;
+let stream=await navigator.mediaDevices.getUserMedia({video:isVideo,audio:true});
+showMyVideo(stream);call.answer(stream);
+call.on('stream',s=>showFriendVideo(s));currentCall=call;
+});
+function copyId(){navigator.clipboard.writeText(myIdEl.innerText);alert("Copied! Send to friend");}
+async function startCall(isVideo){
+let pid=document.getElementById('peerId').value;
+if(!pid)return alert("Paste Friend ID!");
+if(!conn){conn=peer.connect(pid);setupChat();}
+let stream=await navigator.mediaDevices.getUserMedia({video:isVideo,audio:true});
+showMyVideo(stream);
+let call=peer.call(pid,stream,{metadata:{video:isVideo}});
+call.on('stream',s=>showFriendVideo(s));currentCall=call;
+}
+function showMyVideo(s){localStream=s;document.getElementById('myVideo').srcObject=s;}
+function showFriendVideo(s){document.getElementById('friendVideo').srcObject=s;}
+function endCall(){if(currentCall)currentCall.close();if(localStream)localStream.getTracks().forEach(t=>t.stop());document.getElementById('myVideo').srcObject=null;document.getElementById('friendVideo').srcObject=null;}
+function setupChat(){conn.on('data',d=>{addMsg("Friend: "+d);});conn.on('open',()=>{addMsg("✅ Connected!");});}
+function sendMsg(){let i=document.getElementById('msgInput');let m=i.value;if(!m||!conn)return;conn.send(m);addMsg("You: "+m);i.value="";}
+function addMsg(t){let b=document.getElementById('chatBox');let d=document.createElement('div');d.innerText=t;d.style.margin="5px";b.appendChild(d);b.scrollTop=b.scrollHeight;}
+</script>
+</body>
+</html>
