@@ -1,2 +1,146 @@
 <!DOCTYPE html>
-<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>C-Chat</title><script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script><style>*{margin:0;padding:0;box-sizing:border-box;font-family:Arial}body{background:#121212;color:#fff}.page{display:none;min-height:100vh}.page.active{display:flex;flex-direction:column}#login{background:linear-gradient(135deg,#0A84FF,#00D1B2);align-items:center;justify-content:center;padding:20px}.card{background:#fff;color:#000;padding:25px;border-radius:18px;width:100%;max-width:360px;text-align:center}#cam{width:100%;height:200px;background:#000;border-radius:12px;margin:10px 0;object-fit:cover}.btn{width:100%;padding:13px;border:none;border-radius:10px;background:linear-gradient(90deg,#0A84FF,#00D1B2);color:#fff;font-weight:700}.top{background:#1F2937;padding:12px;display:flex;justify-content:space-between;position:sticky;top:0}.nav{position:fixed;bottom:0;width:100%;height:62px;background:#1F2937;display:flex;justify-content:space-around;align-items:center}.nav div{font-size:11px;text-align:center;color:#aaa}.nav div.active{color:#0A84FF}.box{background:#1E1E1E;margin:10px;padding:12px;border-radius:12px}.idBox{background:#000;padding:8px;border-radius:8px;color:#00FF88;font-size:12px;word-break:break-all;margin:6px 0}.row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:8px 0}.b{padding:10px 18px;border:none;border-radius:20px;color:#fff;font-weight:600}.list{padding:10px;padding-bottom:70px;flex:1;overflow-y:auto}.item{display:flex;align-items:center;padding:11px;background:#1E293B;margin:5px 0;border-radius:10px}.av{width:42px;height:42px;background:linear-gradient(135deg,#0A84FF,#00D1B2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;margin-right:10px}video{width:100%;height:200px;background:#000;border-radius:10px;object-fit:cover}#chatWin{position:fixed;top:0;left:0;width:100%;height:100%;background:#121212;z-index:20;display:none;flex-direction:column}#chatMsgs{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:6px}.msg{max-width:75%;padding:9px 13px;border-radius:16px;font-size:14px}.me{align-self:flex-end;background:#0A84FF}.other{align-self:flex-start;background:#2D3748}</style></head><body><div id="login" class="page active"><div class="card"><h2 style="color:#0A84FF">C-Chat</h2><p>Face Verification Login</p><video id="cam" autoplay playsinline></video><input id="nameIn" placeholder="Your Name" style="width:100%;padding:11px;border-radius:8px;border:1px solid #ccc;margin:5px 0"><button class="btn" onclick="loginFace()">Verify Face & Enter</button><p id="status" style="font-size:12px;margin-top:8px;color:green"></p></div></div><div id="app" class="page"><div class="top"><b id="hi">C-Chat</b><span onclick="localStorage.clear();location.reload()">Logout</span></div><div id="tab-calls" class="list"><div class="box"><center>YOUR ID - Share to friend:</center><div class="idBox" id="myId">Generating...</div><div class="row"><button class="b" style="background:#0A84FF" onclick="copyId()">Copy ID</button></div><input id="friendId" placeholder="Paste Friend ID here" style="width:100%;padding:11px;border-radius:8px;border:none;background:#2D3748;color:#fff;margin:8px 0"><div class="row"><button class="b" style="background:#00C851" onclick="doCall(false)">📞 Voice</button><button class="b" style="background:#0A84FF" onclick="doCall(true)">📹 Video</button><button class="b" style="background:#FF3B30" onclick="endCall()">❌ End</button></div></div><div class="row"><video id="localV" autoplay muted></video><video id="remoteV" autoplay></video></div><div id="contactsList"></div></div><div id="tab-chats" class="list" style="display:none"></div><div id="tab-history" class="list" style="display:none"></div><div id="chatWin"><div class="top"><span onclick="closeChat()">← Back</span><b id="chatName">Chat</b><span><button class="b" style="background:#00C851;padding:6px 10px" onclick="callFromChat(false)">📞</button> <button class="b" style="background:#0A84FF;padding:6px 10px" onclick="callFromChat(true)">📹</button></span></div><div id="chatMsgs"></div><div style="display:flex;padding:8px;gap:6px"><input id="msgIn" style="flex:1;padding:11px;border-radius:20px;border:none;background:#2D3748;color:#fff" placeholder="Message..."><button onclick="sendMsg()" style="width:44px;height:44px;border-radius:50%;border:none;background:#0A84FF;color:#fff">➤</button></div></div><div class="nav"><div class="active" onclick="showTab('calls',this)">📞<br>Calls</div><div onclick="showTab('chats',this)">💬<br>Chats</div><div onclick="showTab('history',this)">🕒<br>History</div><div onclick="alert('C-Chat by Chaitra')">👤<br>Profile</div></div></div><script>let peer,localStream,currentCall,currentChat=null,msgs={},hist=JSON.parse(localStorage.getItem('cchat_h')||'[]');let contacts=[{name:"Mama"},{name:"Bestie"},{name:"Papa"},{name:"Friend"}];navigator.mediaDevices.getUserMedia({video:true,audio:true}).then(s=>{document.getElementById('cam').srcObject=s;localStream=s;document.getElementById('localV').srcObject=s;}).catch(()=>{});function loginFace(){let n=document.getElementById('nameIn').value;if(!n){alert('Enter name');return}document.getElementById('status').innerText='Scanning... ✅ Verified!';setTimeout(()=>{localStorage.setItem('cname',n);document.getElementById('login').classList.remove('active');document.getElementById('app').classList.add('active');document.getElementById('hi').innerText='Hi '+n+' | C-Chat';initPeer();renderAll()},1000)}function initPeer(){peer=new Peer();peer.on('open',id=>{document.getElementById('myId').innerText=id});peer.on('call',call=>{if(confirm('Incoming Call from '+call.peer+' Accept?')){call.answer(localStream);call.on('stream',s=>{document.getElementById('remoteV').srcObject=s;currentCall=call;addHist(call.peer,'Incoming Call')})}})}function doCall(v){let fid=document.getElementById('friendId').value.trim();if(!fid){alert('Paste Friend ID');return}let call=peer.call(fid,localStream);call.on('stream',s=>{document.getElementById('remoteV').srcObject=s});currentCall=call;addHist(fid,v?'Video Call':'Voice Call')}function endCall(){currentCall?.close();document.getElementById('remoteV').srcObject=null;currentCall=null}function copyId(){navigator.clipboard.writeText(document.getElementById('myId').innerText);alert('ID Copied!')}function showTab(t,el){document.querySelectorAll('.nav div').forEach(d=>d.classList.remove('active'));el.classList.add('active');document.getElementById('tab-calls').style.display=t==='calls'?'block':'none';document.getElementById('tab-chats').style.display=t==='chats'?'block':'none';document.getElementById('tab-history').style.display=t==='history'?'block':'none'}function renderAll(){let cH='';contacts.forEach(c=>{cH+=`<div class="item"><div class="av">${c.name[0]}</div><div style="flex:1"><b>${c.name}</b></div><button class="b" style="background:#0A84FF;padding:6px 12px" onclick="openChat('${c.name}')">💬</button> <button class="b" style="background:#00C851;padding:6px 12px" onclick="alert('Ask ${c.name} ID and paste above')">📞</button></div>`});document.getElementById('contactsList').innerHTML=cH;document.getElementById('tab-chats').innerHTML=cH;renderHist()}function addHist(n,t){hist.unshift({name:n,type:t,time:new Date().toLocaleString()});localStorage.setItem('cchat_h',JSON.stringify(hist));renderHist()}function renderHist(){let h='';hist.forEach(x=>{h+=`<div class="item"><div class="av">${x.type.includes('Video')?'📹':'📞'}</div><div style="flex:1"><b>${x.name.substring(0,15)}..</b><div style="font-size:11px;color:#aaa">${x.type} - ${x.time}</div></div></div>`});if(!h) h='<center style="color:#aaa;margin-top:20px">No history yet</center>';document.getElementById('tab-history').innerHTML=h}function openChat(name){currentChat=name;document.getElementById('chatName').innerText=name;document.getElementById('chatWin').style.display='flex';let box=document.getElementById('chatMsgs');box.innerHTML='';(msgs[name]||[]).forEach(m=>{box.innerHTML+=`<div class="msg ${m.me?'me':'other'}">${m.t}</div>`})}function closeChat(){document.getElementById('chatWin').style.display='none'}function sendMsg(){let inp=document.getElementById('msgIn');if(!inp.value) return;if(!msgs[currentChat]) msgs[currentChat]=[];msgs[currentChat].push({t:inp.value,me:true});document.getElementById('chatMsgs').innerHTML+=`<div class="msg me">${inp.value}</div>`;inp.value=''}function callFromChat(v){document.getElementById('chatWin').style.display='none';showTab('calls',document.querySelector('.nav div'));if(v) doCall(true);else doCall(false)}if(localStorage.getItem('cname')){document.getElementById('login').classList.remove('active');document.getElementById('app').classList.add('active');document.getElementById('hi').innerText='Hi '+localStorage.getItem('cname')+' | C-Chat';setTimeout(()=>{initPeer();renderAll()},500)}</script></body></html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>C-Chat Real Chat</title>
+<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial}
+body{background:#7B61FF}.page{display:none}.page.active{display:flex;min-height:100vh}
+#login{background:linear-gradient(135deg,#7B61FF,#5A3EFF);justify-content:center;align-items:center;padding:20px;min-height:100vh}
+.card{background:#fff;padding:22px;border-radius:20px;width:100%;max-width:350px;text-align:center}
+#cam{width:90px;height:90px;border-radius:50%;background:#000;margin:10px auto;display:block;object-fit:cover}
+.btn{width:100%;padding:12px;border:none;border-radius:10px;background:#7B61FF;color:#fff;font-weight:700;margin-top:8px}
+.phone{width:100%;max-width:400px;margin:0 auto;background:#fff;min-height:100vh;display:flex;flex-direction:column;position:relative;border-radius:24px;overflow:hidden}
+.top{background:#7B61FF;color:#fff;padding:12px;display:flex;justify-content:space-between}
+.idBox{background:#F0F0FF;margin:10px;padding:8px;border-radius:8px;font-size:11px;word-break:break-all;text-align:center;color:#7B61FF;font-weight:700}
+.item{display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid #eee}
+.av{width:42px;height:42px;border-radius:50%;background:#7B61FF;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;margin-right:10px}
+#chatWin{position:fixed;top:0;left:0;width:100%;height:100%;background:#EFE7FF;z-index:20;display:none;flex-direction:column;max-width:400px;left:50%;transform:translateX(-50%)}
+#chatMsgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px}
+.msg{max-width:70%;padding:10px 14px;border-radius:16px;font-size:14px}.me{align-self:flex-end;background:#7B61FF;color:#fff}.other{align-self:flex-start;background:#fff}
+#videoOverlay{position:fixed;top:0;left:0;width:100%;height:100%;background:#111;z-index:30;display:none;flex-direction:column;max-width:400px;left:50%;transform:translateX(-50%)}
+#videoOverlay video{width:100%;height:100%;object-fit:cover}
+#localV{position:absolute;top:20px;right:20px;width:100px;height:130px;border-radius:12px;border:2px solid #fff;z-index:2}
+.vControls{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);display:flex;gap:12px;background:rgba(0,0,0,.6);padding:10px 18px;border-radius:30px}
+</style>
+</head>
+<body>
+<div id="login" class="page active"><div class="card"><h2 style="color:#7B61FF">C-Chat Real 💬</h2><video id="cam" autoplay muted playsinline></video><input id="nameIn" placeholder="Your Name" style="width:100%;padding:11px;border-radius:8px;border:1px solid #ddd;margin:6px 0"><button class="btn" onclick="login()">Continue</button></div></div>
+
+<div id="app" class="page"><div class="phone">
+<div class="top"><b id="hi">C-Chat</b><span onclick="localStorage.clear();location.reload()">Logout</span></div>
+<div class="idBox" id="myId">Generating...</div>
+<div style="padding:0 16px;display:flex;gap:6px"><input id="friendId" placeholder="Paste Friend ID" style="flex:1;padding:10px;border-radius:8px;border:1px solid #ddd;font-size:12px"><button onclick="copyId()" style="padding:10px;background:#7B61FF;color:#fff;border:none;border-radius:8px">Copy</button></div>
+<div style="padding:8px 16px;display:flex;gap:6px"><button onclick="connectFriend()" style="flex:1;padding:10px;background:#00C851;color:#fff;border:none;border-radius:8px;font-weight:700">💬 Connect & Chat</button><button onclick="doCall(true)" style="flex:1;padding:10px;background:#7B61FF;color:#fff;border:none;border-radius:8px">📹 Video Call</button></div>
+<div id="contactsList" style="flex:1;overflow-y:auto;padding-bottom:60px"></div>
+<div style="padding:10px;font-size:12px;color:#666;text-align:center">Share your ID to friend via WhatsApp to start real chat</div>
+
+<div id="chatWin">
+<div style="background:#7B61FF;color:#fff;padding:12px;display:flex;align-items:center;gap:10px"><span onclick="closeChat()" style="font-size:20px">←</span><div style="width:36px;height:36px;background:#fff;color:#7B61FF;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700" id="chatAv">F</div><b id="chatName" style="flex:1">Friend</b><button onclick="doCall(false)" style="width:36px;height:36px;border-radius:50%;border:none">📞</button><button onclick="doCall(true)" style="width:36px;height:36px;border-radius:50%;border:none;background:#fff">📹</button></div>
+<div id="chatMsgs"></div>
+<div style="display:flex;padding:10px;gap:6px;background:#fff"><input id="msgIn" placeholder="Type message..." style="flex:1;padding:12px;border-radius:20px;border:none;background:#F0F0FF"><button onclick="sendReal()" style="width:44px;height:44px;border-radius:50%;border:none;background:#7B61FF;color:#fff">➤</button></div>
+</div>
+
+<div id="videoOverlay"><video id="remoteV" autoplay playsinline></video><video id="localV" autoplay muted playsinline></video><div class="vControls"><button onclick="endCall()" style="width:48px;height:48px;border-radius:50%;border:none;background:#FF3B30;color:#fff">✕</button></div></div>
+</div></div>
+
+<script>
+let peer,localStream,currentCall,currentConn,currentChat=null,msgs={},contacts=[];
+
+navigator.mediaDevices.getUserMedia({video:true}).then(s=>{document.getElementById('cam').srcObject=s}).catch(()=>{});
+
+function login(){
+let n=document.getElementById('nameIn').value;if(!n){alert('Enter name');return}
+localStorage.setItem('cname',n);
+navigator.mediaDevices.getUserMedia({video:true,audio:{echoCancellation:true}}).then(s=>{
+localStream=s;
+document.getElementById('login').classList.remove('active');
+document.getElementById('app').classList.add('active');
+document.getElementById('hi').innerText='Hi '+n;
+initPeer(); renderContacts();
+});
+}
+
+function initPeer(){
+peer=new Peer();
+peer.on('open',id=>{document.getElementById('myId').innerText='Your ID: '+id});
+peer.on('connection',conn=>{
+currentConn=conn;
+setupConn(conn);
+let name=conn.peer.substring(0,8);
+addContact(name,conn.peer);
+openChat(name,conn.peer);
+});
+peer.on('call',call=>{
+if(confirm('Incoming Call Accept?')){
+document.getElementById('videoOverlay').style.display='flex';
+call.answer(localStream);
+call.on('stream',s=>{document.getElementById('remoteV').srcObject=s;document.getElementById('localV').srcObject=localStream});
+currentCall=call;
+}
+});
+}
+
+function connectFriend(){
+let fid=document.getElementById('friendId').value.trim();if(!fid){alert('Paste Friend ID');return}
+let conn=peer.connect(fid);
+conn.on('open',()=>{
+currentConn=conn;
+setupConn(conn);
+let name=fid.substring(0,8);
+addContact(name,fid);
+openChat(name,fid);
+alert('Connected! Now you can real chat!');
+});
+}
+
+function setupConn(conn){
+conn.on('data',data=>{
+let name=conn.peer.substring(0,8);
+if(!msgs[name]) msgs[name]=[];
+msgs[name].push({t:data,me:false});
+if(currentChat===name){
+document.getElementById('chatMsgs').innerHTML+=`<div class="msg other">${data}</div>`;
+}
+});
+}
+
+function doCall(v){
+let fid=document.getElementById('friendId').value.trim();if(!fid){alert('Paste ID first');return}
+document.getElementById('videoOverlay').style.display='flex';
+let call=peer.call(fid,localStream);
+call.on('stream',s=>{document.getElementById('remoteV').srcObject=s;document.getElementById('localV').srcObject=localStream});
+currentCall=call;
+}
+function endCall(){currentCall?.close();document.getElementById('videoOverlay').style.display='none';currentCall=null}
+function copyId(){let id=document.getElementById('myId').innerText.replace('Your ID: ','');navigator.clipboard.writeText(id);alert('ID Copied! Send to friend on WhatsApp');}
+
+function addContact(name,id){
+if(!contacts.find(c=>c.id===id)){contacts.unshift({name,id}); renderContacts();}
+}
+function renderContacts(){
+let h='';contacts.forEach(c=>{h+=`<div class="item" onclick="openChat('${c.name}','${c.id}')"><div class="av">${c.name[0]}</div><div style="flex:1"><b>${c.name}</b><div style="font-size:11px;color:#888">${c.id.substring(0,12)}...</div></div><div>💬</div></div>`});
+if(!h) h='<div style="padding:20px;text-align:center;color:#888">No chats yet<br>Share ID to friend to start</div>';
+document.getElementById('contactsList').innerHTML=h;
+}
+function openChat(name,id){
+currentChat=name;document.getElementById('chatName').innerText=name;document.getElementById('chatAv').innerText=name[0];
+document.getElementById('friendId').value=id;
+document.getElementById('chatWin').style.display='flex';
+let box=document.getElementById('chatMsgs');box.innerHTML='';
+(msgs[name]||[]).forEach(m=>{box.innerHTML+=`<div class="msg ${m.me?'me':'other'}">${m.t}</div>`});
+}
+function closeChat(){document.getElementById('chatWin').style.display='none';}
+function sendReal(){
+let inp=document.getElementById('msgIn');if(!inp.value) return;
+if(!msgs[currentChat]) msgs[currentChat]=[];
+msgs[currentChat].push({t:inp.value,me:true});
+document.getElementById('chatMsgs').innerHTML+=`<div class="msg me">${inp.value}</div>`;
+if(currentConn && currentConn.open){currentConn.send(inp.value);}
+inp.value='';
+}
+</script>
+</body>
+</html>
