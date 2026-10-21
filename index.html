@@ -1,105 +1,76 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mood Slay - Final Good Version</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mood Scan</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:Inter,system-ui,sans-serif}
-body{background:#0e0a1d;color:#fff;max-width:430px;margin:0 auto}
-.page{padding:14px 16px 90px}
-.header{display:flex;justify-content:space-between;align-items:flex-start;margin-top:6px}
-.logo{font-size:46px;font-weight:900;line-height:0.85;background:linear-gradient(180deg,#ff5ec8 0%,#9d5cff 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.iconRow{display:flex;gap:10px}
-.icon{width:44px;height:44px;border-radius:50%;background:#1e1933;display:grid;place-items:center;font-size:18px}
-.checkTitle{font-size:22px;font-weight:800;margin-top:18px}
-.checkSub{color:#8b7fa6;font-size:13px;margin-top:4px}
-.moods{display:flex;gap:10px;margin-top:16px;overflow-x:auto}
-.m{padding:12px 16px;border-radius:18px;font-weight:700;font-size:13px;white-space:nowrap;background:#251f3d;color:#b497ff;border:1px solid #2f274d}
-.m.active{background:#ff3eb6;color:#fff;box-shadow:0 0 18px #ff3eb688}
-.friendsHead{display:flex;justify-content:space-between;align-items:center;margin-top:22px}
-.friendsHead h3{font-size:20px;font-weight:800}
-.seeAll{color:#ff5ec8;font-size:14px}
-.friendsList{display:flex;gap:18px;margin-top:14px;overflow-x:auto}
-.f{text-align:center;min-width:80px}
-.f img{width:84px;height:84px;border-radius:50%;object-fit:cover;border:3px solid transparent;background:linear-gradient(#0e0a1d,#0e0a1d) padding-box, linear-gradient(135deg,#ff3eb6,#8a5cff) border-box}
-.f b{display:block;margin-top:6px;font-size:14px}
-.f span{background:#2b2347;color:#ff8ad6;font-size:11px;padding:3px 10px;border-radius:20px;display:inline-block;margin-top:4px}
-.scanCard{margin-top:20px;background:linear-gradient(135deg,#1e1448,#a020d6,#ff3eb6);border-radius:22px;padding:16px;display:flex;align-items:center;justify-content:space-between}
-.scanCard h4{font-size:18px}
-.scanCard p{font-size:11px;opacity:.9;margin-top:2px}
-.scanBtn{background:#fff;color:#3a1a5c;border:none;padding:10px 16px;border-radius:12px;font-weight:800;font-size:13px;cursor:pointer}
-.tabs{display:flex;gap:12px;margin-top:20px}
-.tab{flex:1;padding:12px;border-radius:16px;text-align:center;font-weight:700;font-size:14px;cursor:pointer;background:#211c37;color:#9a8abf}
-.tab.active{background:#ff3eb6;color:#fff}
-.chatList{margin-top:14px;display:flex;flex-direction:column;gap:10px}
-.chat{display:flex;align-items:center;gap:12px}
-.chat img{width:48px;height:48px;border-radius:50%}
-.chatInfo{flex:1;background:#1a1530;border-radius:16px;padding:10px 12px}
-.time{color:#ff5ec8;font-size:13px}
-.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#18132e;border-top:1px solid #2a2342;display:flex;justify-content:space-around;padding:8px 0 10px;border-radius:24px 24px 0 0}
-.nav div{text-align:center;font-size:11px;color:#6b6585}
-.nav .active{color:#ff3eb6}
+body{margin:0;background:#0f0f0f;color:#fff;font-family:sans-serif;display:flex;justify-content:center}
+.box{width:100%;max-width:380px;padding:20px}
+h3{font-weight:400;text-align:center;margin:10px 0;color:#ccc}
+.camera{position:relative;width:100%;height:360px;background:#000;border-radius:18px;overflow:hidden;border:1px solid #2a2a2a}
+video{width:100%;height:100%;object-fit:cover}
+.scan-line{position:absolute;top:0;left:0;width:100%;height:2px;background:#fff;box-shadow:0 0 8px #fff;animation:move 2.5s linear infinite}
+@keyframes move{0%{top:0}50%{top:100%}100%{top:0}}
+.corner{position:absolute;width:28px;height:28px;border-color:#fff}
+.c1{top:16px;left:16px;border-top:1.5px solid;border-left:1.5px solid}
+.c2{top:16px;right:16px;border-top:1.5px solid;border-right:1.5px solid}
+.c3{bottom:16px;left:16px;border-bottom:1.5px solid;border-left:1.5px solid}
+.c4{bottom:16px;right:16px;border-bottom:1.5px solid;border-right:1.5px solid}
+.scan-text{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);font-size:10px;letter-spacing:3px;background:rgba(255,255,255,0.1);padding:4px 14px;border-radius:20px}
+.result{background:#1a1a1a;border:1px solid #2a2a2a;padding:16px;border-radius:16px;margin-top:16px;line-height:1.7}
+.btn{width:100%;background:#fff;color:#000;border:none;padding:14px;border-radius:12px;margin-top:12px;font-weight:600;cursor:pointer}
+.small{font-size:11px;color:#777;text-align:center;margin-top:8px}
 </style>
 </head>
 <body>
-<div class="page">
-<div class="header"><div class="logo">Mood<br>Slay</div><div class="iconRow"><div class="icon">🔔</div><div class="icon" style="background:#9d5cff;color:#fff">😏</div></div></div>
-<div class="checkTitle">Daily Mood Check-in</div>
-<div class="checkSub">How are you slaying today? ✨</div>
-<div class="moods">
-<div class="m active">✨ Slay ✨</div>
-<div class="m">Chill 😌</div>
-<div class="m">Stressed 😣</div>
-<div class="m">Vibin 🎶</div>
-<div class="m">Moody 🌙</div>
-</div>
-<div class="friendsHead"><h3>Friends feeling today</h3><span class="seeAll">See all →</span></div>
-<div class="friendsList">
-<div class="f"><img src="https://i.pravatar.cc/150?img=5"><b>Ari</b><span>Slay ✨</span></div>
-<div class="f"><img src="https://i.pravatar.cc/150?img=8"><b>Zoe</b><span>Chillin 😌</span></div>
-<div class="f"><img src="https://i.pravatar.cc/150?img=12"><b>Kai</b><span>Stressed 😣</span></div>
-</div>
-<div class="scanCard"><div><h4>✨ Mood Scan</h4><p>Scan face to guess what people<br>are thinking</p></div><button class="scanBtn" onclick="openScan()">Scan Now →</button></div>
-<div class="tabs">
-<div class="tab active" id="tF" onclick="showT('f')">✨ Friends</div>
-<div class="tab" id="tO" onclick="showT('o')">Others</div>
-</div>
-<div id="listF" class="chatList">
-<div class="chat"><img src="https://i.pravatar.cc/100?img=32"><div class="chatInfo"><b>Ari</b><span>omg ikr we HAVE to talk lol 😭</span></div><div class="time">2m ></div></div>
-<div class="chat"><img src="https://i.pravatar.cc/100?img=15"><div class="chatInfo"><b>Zoe</b><span>you good? mood scan said stressed 💜</span></div><div class="time">12m ></div></div>
-</div>
-<div id="listO" class="chatList" style="display:none">
-<div class="chat"><img src="https://i.pravatar.cc/100?img=26"><div class="chatInfo"><b>Maya - Others</b><span>hey, about the study group... ✨</span></div><div class="time">30m ></div></div>
-<div class="chat"><img src="https://i.pravatar.cc/100?img=33"><div class="chatInfo"><b>Liam - Others</b><span>omg that was hilarious 😂</span></div><div class="time">1h ></div></div>
-</div>
-</div>
-<div id="scanPage" style="display:none;position:fixed;inset:0;background:#0e0a1d;z-index:99;padding:16px">
+<div class="box">
 <h3>Mood Scan - Guess what people thinking</h3>
-<video id="cam" autoplay playsinline style="width:100%;height:400px;background:#000;border-radius:20px;margin-top:12px;display:none"></video>
-<img id="ph" src="https://i.pravatar.cc/400?img=15" style="width:100%;height:400px;object-fit:cover;border-radius:20px;margin-top:12px">
-<p style="text-align:center;color:#ff8eff;margin:10px">SCANNING 87% - Analyzing expressions</p>
-<div style="background:#1a1433;border:1px solid #ff6ec7;padding:14px;border-radius:16px">AI: 80% Vibin' - thinking about music 🎵<br>70% Happy</div>
-<div style="display:flex;gap:10px;margin-top:14px"><button onclick="closeScan()" style="flex:1;padding:12px;border-radius:14px;border:1px solid #ff6ec7;background:transparent;color:#ff8eff">Cancel</button><button onclick="closeScan();alert('Saved to Friends & Others chats!')" style="flex:1;padding:12px;border-radius:14px;background:#ff3eb6;border:none;color:#fff">Save Result</button></div>
+
+<div class="camera">
+<video id="video" autoplay muted playsinline></video>
+<div class="scan-line"></div>
+<div class="corner c1"></div><div class="corner c2"></div><div class="corner c3"></div><div class="corner c4"></div>
+<div class="scan-text">SCANNING</div>
 </div>
-<div class="nav">
-<div class="active">🏠<br>Home</div>
-<div onclick="openScan()">📷<br>Scan</div>
-<div>👥<br>Friends</div>
-<div>👤<br>Profile</div>
+
+<div class="result" id="res">
+<b id="emoji" style="font-size:22px">😐</b> <span id="exp">Neutral</span><br>
+<span style="color:#aaa">Feeling:</span> <span id="feel">Calm - Just chillin</span><br>
+<span style="color:#aaa">Thinking:</span> <span id="think">"Hmm... maybe tired?"</span>
 </div>
+
+<button class="btn" onclick="save()">Save to Chat</button>
+<div class="small">Saved chats appear in Friends & Others</div>
+</div>
+
 <script>
-function showT(t){
- document.getElementById('listF').style.display=t==='f'?'flex':'none';
- document.getElementById('listO').style.display=t==='o'?'flex':'none';
- document.getElementById('tF').className=t==='f'?'tab active':'tab';
- document.getElementById('tO').className=t==='o'?'tab active':'tab';
+let vid=document.getElementById('video');
+navigator.mediaDevices.getUserMedia({video:{facingMode:"user"}}).then(s=>vid.srcObject=s);
+
+const moods=[
+{emoji:"😊",exp:"Happy",feel:"Happy & Vibin'",think:"Thinking about something good 🎵"},
+{emoji:"😣",exp:"Stressed / Frowning",feel:"A bit annoyed",think:"Overthinking something? 💭"},
+{emoji:"😌",exp:"Chill / Relaxed",feel:"Calm & peaceful",think:"Just vibin'... ✨"},
+{emoji:"🤔",exp:"Confused / Curious",feel:"Deep in thoughts",think:"What should I do next?"},
+{emoji:"🥺",exp:"Sad / Low",feel:"Feeling low today",think:"Need a break..."}
+];
+let i=0;
+setInterval(()=>{
+let m=moods[i%moods.length];
+document.getElementById('emoji').innerText=m.emoji;
+document.getElementById('exp').innerText=m.exp;
+document.getElementById('feel').innerText=m.feel;
+document.getElementById('think').innerText='"'+m.think+'"';
+i++;
+},2500);
+
+function save(){
+let txt=document.getElementById('res').innerText;
+let chats=JSON.parse(localStorage.getItem('moodChats')||'[]');
+chats.push({text:txt,time:new Date().toLocaleTimeString()});
+localStorage.setItem('moodChats',JSON.stringify(chats));
+alert('Saved! Check Friends & Others chat');
 }
-function openScan(){
- document.getElementById('scanPage').style.display='block';
- navigator.mediaDevices?.getUserMedia({video:true}).then(s=>{document.getElementById('cam').style.display='block';document.getElementById('ph').style.display='none';document.getElementById('cam').srcObject=s}).catch(()=>{})
-}
-function closeScan(){document.getElementById('scanPage').style.display='none'}
 </script>
 </body>
 </html>
